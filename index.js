@@ -14,16 +14,19 @@ const gologinParams = {
 const GL = new GoLogin(gologinParams);
 console.log(gologinParams)
 
-function checkBrowser(){
-  console.log('working port', 3000, 'profile', process.env.PROFILE_ID)  
-}
 
 async function startBrowser(){
-  const wsUrl = await GL.start({
+  const { wsUrl } = await GL.start({
       uploadCookiesToServer: true,
       autoUpdateBrowser: false,
+      
   });
-  setInterval(checkBrowser, 1000);
+  console.log('wsUrl', wsUrl.toString().replace('127.0.0.1:3500', 'gologin:3000'));
+
+  process.on('exit', () => {
+    GL.stop();
+    console.log("Process is exiting...");
+  });
 }
 
 startBrowser();

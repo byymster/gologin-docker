@@ -1,5 +1,5 @@
 #!/bin/bash
-
+rm -rf  /tmp/.X0-lock
 mkdir ~/.vnc
 DISPLAY=:0
 export DISPLAY=:0

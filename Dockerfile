@@ -44,6 +44,7 @@ COPY fonts /home/orbita/.gologin/browser/fonts
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY orbita.conf /etc/nginx/conf.d/orbita.conf
+RUN chmod 777 -R /home/orbita/.gologin && chown -R orbita:orbita /home/orbita/.gologin
 RUN chmod 777 /var/lib/nginx -R
 RUN chmod 777 /var/log -R
 RUN chmod 777 /run -R
