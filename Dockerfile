@@ -58,7 +58,8 @@ COPY entrypoint.sh /entrypoint.sh
 
 RUN	 chmod 777 /entrypoint.sh \
 	&& mkdir /tmp/.X11-unix \
-	&& chmod 1777 /tmp/.X11-unix 
+	&& chmod 1777 /tmp/.X11-unix \
+	&& chmod 777 /opt/orbita
 
 USER orbita
 ENTRYPOINT ["/entrypoint.sh"]
