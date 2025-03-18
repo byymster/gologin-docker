@@ -14,15 +14,15 @@ const gologinParams = {
   extra_params: [
     '--start-maximized',
     // '--disable-dev-shm-usage',
-    '--no-sandbox',
-    '--no-zygote',
+    // '--no-sandbox',
+    // '--no-zygote',
     '--window-position=0,0',
     `--window-size=${SCREEN_WIDTH},${SCREEN_HEIGHT}`,
   ],
 }
 
 // console.log(gologinParams)
-const GLCreator = new GoLogin(gologinParams)
+const GLCreator = new GoLogin({...gologinParams, waitWebsocket: false})
 
 async function startBrowser() {
   const proxy =
