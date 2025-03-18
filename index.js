@@ -1,5 +1,6 @@
 const GoLogin = require('gologin')
 const fs = require('fs')
+const UAParser = require('ua-parser-js')
 
 const SCREEN_WIDTH = process.env.SCREEN_WIDTH
 const SCREEN_HEIGHT = process.env.SCREEN_HEIGHT
@@ -38,21 +39,25 @@ async function startBrowser() {
         }
       : { proxyEnabled: false, proxy: { mode: 'none' } }
 
+  const ua = new UAParser(process.env.GOLOGIN_USERAGENT)
   const createOpts = {
-    name: process.env.GOLOGIN_PROFILE_NAME || undefined,
+    name: process.env.GOLOGIN_PROFILE_NAME || 'Generated',
     autoLang: true,
     lockEnabled: true,
-    os: process.env.GOLOGIN_OS,
+    // os: process.env.GOLOGIN_OS,
     folders: ['Generated'],
+    fingerprint: {
+      autoLang: true,
+      resolution: `${SCREEN_WIDTH}x${SCREEN_HEIGHT}`,
+    },
     navigator: {
       userAgent: process.env.GOLOGIN_USERAGENT,
-      platform: process.env.GOLOGIN_PLATFORM,
+      platform: ua.getOS().name,
       resolution: `${SCREEN_WIDTH}x${SCREEN_HEIGHT}`,
       language: process.env.GOLOGIN_LANGUAGE,
     },
     ...proxy,
   }
-  // console.dir(createOpts)
   const profileId = await GL.create(createOpts)
   GL = new GoLogin({ ...gologinParams, profile_id: profileId })
   const { wsUrl } = await GL.start()
