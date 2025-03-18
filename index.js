@@ -61,8 +61,11 @@ async function startBrowser() {
   const profileId = await GLCreator.create(createOpts)
 
   let GL
+  let cleanupCalled = false
   function cleanup(exit = false) {
     return async () => {
+      if (cleanupCalled) return
+      cleanupCalled = true
       console.log('Cleaning up...')
       try {
         if (profileId) {
@@ -74,10 +77,14 @@ async function startBrowser() {
           await GL.stop()
         }
         console.log('Cleanup completed')
-        if (exit) process.exit(0)
+        if (exit) {
+          process.exit(0)
+        }
       } catch (error) {
         console.error('Error during cleanup:', error)
-        if (exit) process.exit(1)
+        if (exit) {
+          process.exit(1)
+        }
       }
     }
   }
