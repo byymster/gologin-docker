@@ -61,22 +61,24 @@ async function startBrowser() {
   const profileId = await GLCreator.create(createOpts)
 
   let GL
-  async function cleanup() {
-    console.log('Cleaning up...')
-    try {
-      if (profileId) {
-        console.log('Deleting profile...')
-        await GLCreator.delete(profileId)
+  function cleanup(exit = false) {
+    return async () => {
+      console.log('Cleaning up...')
+      try {
+        if (profileId) {
+          console.log('Deleting profile...')
+          await GLCreator.delete(profileId)
+        }
+        if (GL) {
+          console.log('Stopping browser...')
+          await GL.stop()
+        }
+        console.log('Cleanup completed')
+        if (exit) process.exit(0)
+      } catch (error) {
+        console.error('Error during cleanup:', error)
+        if (exit) process.exit(1)
       }
-      if (GL) {
-        console.log('Stopping browser...')
-        await GL.stop()
-      }
-      console.log('Cleanup completed')
-      process.exit(0)
-    } catch (error) {
-      console.error('Error during cleanup:', error)
-      process.exit(1)
     }
   }
   try {
@@ -98,13 +100,16 @@ async function startBrowser() {
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
   } catch (error) {
     console.error('Error starting GoLogin:', error)
-    await cleanup()
+    process.exit(1)
   }
 
-  process.on('exit', cleanup)
+  process.on('exit', code => {
+    console.log(`Process exiting with code: ${code}`)
+  })
   // Handle Docker stop signals
-  process.on('SIGTERM', cleanup)
-  process.on('SIGINT', cleanup)
+  process.on('beforeExit', cleanup())
+  process.on('SIGTERM', cleanup(true))
+  process.on('SIGINT', cleanup(true))
 }
 
 startBrowser()
