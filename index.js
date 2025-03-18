@@ -13,7 +13,7 @@ const gologinParams = {
   executablePath: '/usr/bin/orbita-browser/chrome',
   extra_params: [
     '--start-maximized',
-    '--disable-dev-shm-usage',
+    // '--disable-dev-shm-usage',
     '--no-sandbox',
     '--no-zygote',
     '--window-position=0,0',
@@ -22,7 +22,7 @@ const gologinParams = {
 }
 
 // console.log(gologinParams)
-let GL = new GoLogin(gologinParams)
+const GLCreator = new GoLogin(gologinParams)
 
 async function startBrowser() {
   const proxy =
@@ -58,30 +58,17 @@ async function startBrowser() {
     },
     ...proxy,
   }
-  const profileId = await GL.create(createOpts)
-  GL = new GoLogin({ ...gologinParams, profile_id: profileId })
-  const { wsUrl } = await GL.start()
-  const finalWsUrl = wsUrl
-    .toString()
-    .replace(
-      '127.0.0.1:3500',
-      `${process.env.GOLOGIN_HOST_NAME}:${process.env.GOLOGIN_HOST_PORT}`,
-    )
-  console.log('wsUrl', finalWsUrl)
+  const profileId = await GLCreator.create(createOpts)
 
-  const currentInstance = {
-    profileId,
-    wsUrl: finalWsUrl,
-  }
-
-  fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
-
+  let GL
   async function cleanup() {
     console.log('Cleaning up...')
     try {
-      await GL.stop()
+      if (GL) {
+        await GL.stop()
+      }
       if (profileId) {
-        await GL.delete(profileId)
+        await GLCreator.delete(profileId)
       }
       console.log('Cleanup completed')
       process.exit(0)
@@ -89,6 +76,27 @@ async function startBrowser() {
       console.error('Error during cleanup:', error)
       process.exit(1)
     }
+  }
+  try {
+    GL = new GoLogin({ ...gologinParams, profile_id: profileId })
+    const { wsUrl } = await GL.start()
+    const finalWsUrl = wsUrl
+      .toString()
+      .replace(
+        '127.0.0.1:3500',
+        `${process.env.GOLOGIN_HOST_NAME}:${process.env.GOLOGIN_HOST_PORT}`,
+      )
+    console.log('wsUrl', finalWsUrl)
+
+    const currentInstance = {
+      profileId,
+      wsUrl: finalWsUrl,
+    }
+
+    fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
+  } catch (error) {
+    console.error('Error starting GoLogin:', error)
+    await cleanup()
   }
 
   process.on('exit', cleanup)
