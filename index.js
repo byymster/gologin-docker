@@ -1,37 +1,12 @@
 const GoLogin = require('gologin')
 const fs = require('fs')
 const UAParser = require('ua-parser-js')
+const { connect } = require('puppeteer-core')
 
 const SCREEN_WIDTH = process.env.SCREEN_WIDTH
 const SCREEN_HEIGHT = process.env.SCREEN_HEIGHT
 const CURRENT_INSTANCE_JSON =
   process.env.CURRENT_INSTANCE_JSON || '/opt/orbita/current-instance.json'
-
-function createCancellablePromise(time = 5000) {
-  const controller = new AbortController()
-  const { signal } = controller
-
-  const promise = new Promise((resolve, reject) => {
-    if (signal.aborted) {
-      reject(new Error('Promise was cancelled'))
-      return
-    }
-
-    const timeout = setTimeout(() => {
-      resolve('Promise completed!')
-    }, time)
-
-    signal.addEventListener('abort', () => {
-      clearTimeout(timeout)
-      resolve()
-    })
-  })
-
-  return {
-    promise,
-    cancel: () => controller.abort(),
-  }
-}
 
 const gologinParams = {
   token: process.env.GOLOGIN_TOKEN,
@@ -49,13 +24,6 @@ const gologinParams = {
 
 // console.log(gologinParams)
 const GLCreator = new GoLogin({ ...gologinParams, waitWebsocket: false })
-
-const { promise: pause, cancel } = createCancellablePromise(1000 * 60 * 10)
-
-async function wait() {
-  await pause
-}
-
 
 async function startBrowser() {
   const proxy =
@@ -95,13 +63,11 @@ async function startBrowser() {
 
   let GL
   let cleanupCalled = false
-  
   function cleanup(exit = false) {
     return async () => {
       if (cleanupCalled) return
       cleanupCalled = true
       console.log('Cleaning up...')
-      cancel()
       try {
         if (profileId) {
           console.log('Deleting profile...')
@@ -147,6 +113,13 @@ async function startBrowser() {
     }
 
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
+
+    const browser = await connect({
+      browserWSEndpoint: wsUrl.toString(),
+      ignoreHTTPSErrors: true,
+    });
+    const page = await browser.newPage();
+
   } catch (error) {
     console.error('Error starting GoLogin:', error)
     process.exit(1)
@@ -154,4 +127,3 @@ async function startBrowser() {
 }
 
 startBrowser()
-wait()
