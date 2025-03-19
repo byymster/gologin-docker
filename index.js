@@ -1,7 +1,6 @@
 const GoLogin = require('gologin')
 const fs = require('fs')
 const UAParser = require('ua-parser-js')
-const { connect } = require('puppeteer-core')
 
 const SCREEN_WIDTH = process.env.SCREEN_WIDTH
 const SCREEN_HEIGHT = process.env.SCREEN_HEIGHT
@@ -113,17 +112,6 @@ async function startBrowser() {
     }
 
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
-
-    const browser = await connect({
-      browserWSEndpoint: wsUrl.toString(),
-      ignoreHTTPSErrors: true,
-    });
-    const page = await browser.newPage();
-    while (true) {
-      await page.goto('https://myip.link');
-      await page.waitForTimeout(5000);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
 
   } catch (error) {
     console.error('Error starting GoLogin:', error)
