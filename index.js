@@ -7,6 +7,32 @@ const SCREEN_HEIGHT = process.env.SCREEN_HEIGHT
 const CURRENT_INSTANCE_JSON =
   process.env.CURRENT_INSTANCE_JSON || '/opt/orbita/current-instance.json'
 
+function createCancellablePromise(timeout) {
+  const controller = new AbortController()
+  const { signal } = controller
+
+  const promise = new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new Error('Promise was cancelled'))
+      return
+    }
+
+    const timeout = setTimeout(() => {
+      resolve('Promise completed!')
+    }, timeout)
+
+    signal.addEventListener('abort', () => {
+      clearTimeout(timeout)
+      resolve()
+    })
+  })
+
+  return {
+    promise,
+    cancel: () => controller.abort(),
+  }
+}
+
 const gologinParams = {
   token: process.env.GOLOGIN_TOKEN,
   remote_debugging_port: 3500,
@@ -22,7 +48,7 @@ const gologinParams = {
 }
 
 // console.log(gologinParams)
-const GLCreator = new GoLogin({...gologinParams, waitWebsocket: false})
+const GLCreator = new GoLogin({ ...gologinParams, waitWebsocket: false })
 
 async function startBrowser() {
   const proxy =
@@ -62,11 +88,13 @@ async function startBrowser() {
 
   let GL
   let cleanupCalled = false
+  const { promise: pause, cancel } = createCancellablePromise(1000 * 60 * 10)
   function cleanup(exit = false) {
     return async () => {
       if (cleanupCalled) return
       cleanupCalled = true
       console.log('Cleaning up...')
+      cancel()
       try {
         if (profileId) {
           console.log('Deleting profile...')
@@ -88,6 +116,13 @@ async function startBrowser() {
       }
     }
   }
+  process.on('exit', code => {
+    console.log(`Process exiting with code: ${code}`)
+  })
+  // Handle Docker stop signals
+  process.on('beforeExit', cleanup())
+  process.on('SIGTERM', cleanup(true))
+  process.on('SIGINT', cleanup(true))
   try {
     GL = new GoLogin({ ...gologinParams, profile_id: profileId })
     const { wsUrl } = await GL.start()
@@ -105,18 +140,11 @@ async function startBrowser() {
     }
 
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
+    await pause
   } catch (error) {
     console.error('Error starting GoLogin:', error)
     process.exit(1)
   }
-
-  process.on('exit', code => {
-    console.log(`Process exiting with code: ${code}`)
-  })
-  // Handle Docker stop signals
-  process.on('beforeExit', cleanup())
-  process.on('SIGTERM', cleanup(true))
-  process.on('SIGINT', cleanup(true))
 }
 
 startBrowser()
