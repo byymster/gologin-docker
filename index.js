@@ -119,6 +119,11 @@ async function startBrowser() {
       ignoreHTTPSErrors: true,
     });
     const page = await browser.newPage();
+    while (true) {
+      await page.goto('https://myip.link');
+      await page.waitForTimeout(5000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 
   } catch (error) {
     console.error('Error starting GoLogin:', error)
