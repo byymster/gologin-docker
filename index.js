@@ -7,7 +7,7 @@ const SCREEN_HEIGHT = process.env.SCREEN_HEIGHT
 const CURRENT_INSTANCE_JSON =
   process.env.CURRENT_INSTANCE_JSON || '/opt/orbita/current-instance.json'
 
-function createCancellablePromise(timeout) {
+function createCancellablePromise(time = 5000) {
   const controller = new AbortController()
   const { signal } = controller
 
@@ -19,7 +19,7 @@ function createCancellablePromise(timeout) {
 
     const timeout = setTimeout(() => {
       resolve('Promise completed!')
-    }, timeout)
+    }, time)
 
     signal.addEventListener('abort', () => {
       clearTimeout(timeout)
