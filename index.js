@@ -15,7 +15,7 @@ const gologinParams = {
   extra_params: [
     '--start-maximized',
     // '--disable-dev-shm-usage',
-    // '--no-sandbox',
+    '--no-sandbox',
     // '--no-zygote',
     '--window-position=0,0',
     `--window-size=${SCREEN_WIDTH},${SCREEN_HEIGHT}`,
