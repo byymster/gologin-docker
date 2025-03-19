@@ -14,9 +14,10 @@ const gologinParams = {
   extra_params: [
     '--start-maximized',
     '--disable-dev-shm-usage',
-	  '--disable-gpu',
+    '--disable-gpu',
     '--no-sandbox',
-    '--headless',
+    '--disable-session-crashed-bubble',
+    '--disable-infobars',
     // '--no-zygote',
     '--window-position=0,0',
     `--window-size=${SCREEN_WIDTH},${SCREEN_HEIGHT}`,
@@ -114,7 +115,6 @@ async function startBrowser() {
     }
 
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
-
   } catch (error) {
     console.error('Error starting GoLogin:', error)
     process.exit(1)
