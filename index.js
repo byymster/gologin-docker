@@ -16,11 +16,21 @@ const gologinParams = {
     '--disable-dev-shm-usage',
     '--disable-gpu',
     '--no-sandbox',
-    '--disable-session-crashed-bubble',
-    '--disable-infobars',
     // '--no-zygote',
     '--window-position=0,0',
     `--window-size=${SCREEN_WIDTH},${SCREEN_HEIGHT}`,
+    // Prevent Chrome from closing
+    '--disable-session-crashed-bubble',
+    '--disable-infobars',
+    '--persistent',
+    '--no-default-browser-check',
+    '--no-first-run',
+    // These flags help with stability
+    '--disable-background-timer-throttling',
+    '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding',
+    // Keep browser open even after debugger detaches
+    '--keep-alive'
   ],
 }
 
