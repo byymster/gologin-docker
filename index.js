@@ -13,8 +13,10 @@ const gologinParams = {
   executablePath: '/usr/bin/orbita-browser/chrome',
   extra_params: [
     '--start-maximized',
-    // '--disable-dev-shm-usage',
+    '--disable-dev-shm-usage',
+	  '--disable-gpu',
     '--no-sandbox',
+    '--headless',
     // '--no-zygote',
     '--window-position=0,0',
     `--window-size=${SCREEN_WIDTH},${SCREEN_HEIGHT}`,
