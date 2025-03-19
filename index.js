@@ -50,6 +50,13 @@ const gologinParams = {
 // console.log(gologinParams)
 const GLCreator = new GoLogin({ ...gologinParams, waitWebsocket: false })
 
+const { promise: pause, cancel } = createCancellablePromise(1000 * 60 * 10)
+
+async function wait() {
+  await pause
+}
+
+
 async function startBrowser() {
   const proxy =
     process.env.GOLOGIN_PROXY_MODE && process.env.GOLOGIN_PROXY_MODE !== 'none'
@@ -88,7 +95,7 @@ async function startBrowser() {
 
   let GL
   let cleanupCalled = false
-  const { promise: pause, cancel } = createCancellablePromise(1000 * 60 * 10)
+  
   function cleanup(exit = false) {
     return async () => {
       if (cleanupCalled) return
@@ -140,7 +147,6 @@ async function startBrowser() {
     }
 
     fs.writeFileSync(CURRENT_INSTANCE_JSON, JSON.stringify(currentInstance))
-    await pause
   } catch (error) {
     console.error('Error starting GoLogin:', error)
     process.exit(1)
@@ -148,3 +154,4 @@ async function startBrowser() {
 }
 
 startBrowser()
+wait()
