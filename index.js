@@ -81,13 +81,13 @@ async function startBrowser() {
       cleanupCalled = true
       console.log('Cleaning up...')
       try {
-        if (profileId) {
-          console.log('Deleting profile...')
-          await GLCreator.delete(profileId)
-        }
         if (GL) {
           console.log('Stopping browser...')
           await GL.stop()
+        }
+        if (profileId) {
+          console.log('Deleting profile...')
+          await GLCreator.delete(profileId)
         }
         console.log('Cleanup completed')
         if (exit) {
