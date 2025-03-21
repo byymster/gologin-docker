@@ -71,6 +71,9 @@ async function startBrowser() {
     },
     ...proxy,
   }
+
+  if (process.env.GOLOGIN_OS) createOpts.os = process.env.GOLOGIN_OS
+
   const profileId = await GLCreator.create(createOpts)
 
   let GL
